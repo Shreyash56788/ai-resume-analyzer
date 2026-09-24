@@ -30,3 +30,7 @@ jobs:
       - name: Run tests
         run: |
           pytest -q
+
+      - name: Build backend Docker image
+        run: |
+          docker build -t ai-resume-backend-ci -f Dockerfile .
