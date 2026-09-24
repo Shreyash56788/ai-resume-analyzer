@@ -45,3 +45,7 @@ GitHub
 
 Testing
 Pytest
+
+## 📸 Application Screenshot
+
+![AI Resume Analyzer](screenshots/resume-analyzer-result.png)
