@@ -2,11 +2,18 @@ import os
 import hashlib
 import openai
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import (
+    FastAPI,
+    UploadFile,
+    File,
+    Form,
+    HTTPException
+)
 
 from app.config import DEMO_MODE
 from app.resume_processor import load_and_split_resume
 from app.embeddings import create_embeddings
+
 from app.retriever import (
     create_faiss_index,
     save_faiss_index,
@@ -14,19 +21,23 @@ from app.retriever import (
     save_chunks,
     load_chunks
 )
+
 from app.job_analyzer import analyze_job
 from app.evaluator import evaluate_skills
 from app.suggestions import generate_suggestions
 from app.scorer import calculate_match_score
+
 from app.job_cache import (
     load_job_analysis,
     save_job_analysis
 )
+
 from app.demo_analyzer import (
     create_demo_job_analysis,
     create_demo_skill_evaluations,
     create_demo_suggestions
 )
+
 from app.performance import PerformanceTimer
 from app.logger import logger
 
@@ -39,6 +50,7 @@ app = FastAPI(
 
 UPLOAD_DIR = "uploads"
 STORAGE_DIR = "storage"
+
 
 os.makedirs(
     UPLOAD_DIR,
@@ -59,6 +71,15 @@ def home():
     }
 
 
+@app.get("/health")
+def health_check():
+
+    return {
+        "status": "healthy",
+        "service": "AI Resume Analyzer API"
+    }
+
+
 @app.post("/analyze")
 async def analyze_resume(
     resume: UploadFile = File(...),
@@ -69,7 +90,10 @@ async def analyze_resume(
 
     try:
 
-        if not resume.filename.lower().endswith(".pdf"):
+        if (
+            not resume.filename
+            or not resume.filename.lower().endswith(".pdf")
+        ):
 
             raise HTTPException(
                 status_code=400,
@@ -100,6 +124,7 @@ async def analyze_resume(
             resume_bytes
         ).hexdigest()[:16]
 
+        # Save resume
         resume_path = os.path.join(
             UPLOAD_DIR,
             f"{resume_hash}.pdf"
@@ -384,25 +409,34 @@ async def analyze_resume(
 
         return {
             "job_title": requirements.job_title,
+
             "match_score": match_score,
+
             "required_skills": (
                 requirements.required_skills
             ),
+
             "preferred_skills": (
                 requirements.preferred_skills
             ),
+
             "matched_skills": matched_skills,
+
             "missing_skills": missing_skills,
+
             "skill_analysis": [
                 evaluation.model_dump()
                 for evaluation in evaluations
             ],
+
             "suggestions": [
                 suggestion.model_dump()
                 for suggestion
                 in suggestions_response.suggestions
             ],
+
             "performance": performance,
+
             "demo_mode": DEMO_MODE
         }
 
