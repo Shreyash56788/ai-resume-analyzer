@@ -77,3 +77,13 @@ def test_reject_empty_resume():
     assert response.json()["detail"] == (
         "Uploaded resume is empty."
     )
+
+def test_health_check():
+    response = client.get("/health")
+
+    assert response.status_code == 200
+
+    assert response.json() == {
+        "status": "healthy",
+        "service": "AI Resume Analyzer API"
+    }
